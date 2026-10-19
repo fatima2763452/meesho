@@ -1,0 +1,313 @@
+import React, { useState, useEffect } from 'react';
+import api from '../../services/api';
+import HoldingReceipt from './HoldingReceipt';
+
+const Holdings = ({ customer, onEditRequest }) => {
+  const [holdings, setHoldings] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
+  const [expandedCard, setExpandedCard] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  const showToast = (message, type = 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  useEffect(() => {
+    fetchHoldings();
+  }, [customer._id]);
+
+  const fetchHoldings = async () => {
+    try {
+      setIsLoading(true);
+      const { data } = await api.get(`/trades/holdings/${customer._id}`);
+      setHoldings(data);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to load holdings.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm(`Are you sure you want to delete this holding record?`)) return;
+    try {
+      await api.delete(`/trades/holdings/${id}`);
+      fetchHoldings();
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to delete holding');
+    }
+  };
+
+  const toggleSelection = (id) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === holdings.length && holdings.length > 0) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(holdings.map(h => h._id));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    if (!window.confirm(`Are you sure you want to delete ${selectedIds.length} holding records?`)) return;
+    try {
+      await api.post(`/trades/holdings/bulk-delete`, { ids: selectedIds });
+      setSelectedIds([]);
+      fetchHoldings();
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to delete holdings');
+    }
+  };
+
+  const formatCurrency = (val) => new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 4
+  }).format(val || 0);
+
+  const formatNumber = (val) => new Intl.NumberFormat('en-IN', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 4
+  }).format(val || 0);
+
+  const totalEquity = holdings.reduce((sum, item) => sum + item.totalValue, 0);
+  const totalUpnl = holdings.reduce((sum, item) => sum + item.upnl, 0);
+  const totalInvestment = totalEquity - totalUpnl;
+  const totalUpnlPct = totalInvestment ? (totalUpnl / totalInvestment) * 100 : 0;
+
+  return (
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`fixed top-4 right-4 z-[200] flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg border animate-in slide-in-from-top-2 fade-in ${toast.type === 'error' ? 'bg-rose-950/90 border-rose-900/50 text-rose-200' : 'bg-emerald-950/90 border-emerald-900/50 text-emerald-200'}`}>
+          <span className="material-symbols-outlined text-[20px]">{toast.type === 'error' ? 'error' : 'check_circle'}</span>
+          <span className="text-sm font-bold">{toast.message}</span>
+        </div>
+      )}
+
+      {/* Sticky Top Section */}
+      <div className="sticky top-[-16px] pt-4 bg-slate-950 z-20 pb-2 mb-2">
+        {/* Total Equity Card */}
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 relative overflow-hidden">
+          <div className="relative z-10">
+            <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Equity</h3>
+            <div className={`text-3xl font-bold mb-2 tracking-tight`}>
+              {formatCurrency(totalEquity)}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold border ${totalUpnl >= 0 ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/15 text-rose-400 border-rose-500/30'}`}>
+                <span className="material-symbols-outlined text-[14px]">{totalUpnl >= 0 ? 'trending_up' : 'trending_down'}</span>
+                {totalUpnl >= 0 ? '+' : ''}{formatCurrency(totalUpnl)} ({totalUpnl >= 0 ? '+' : ''}{totalUpnlPct.toFixed(2)}%)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Active Holdings Header */}
+        <div className="flex items-center justify-between pt-4 pb-1">
+          <div className="flex items-center gap-2 text-slate-200 font-bold text-[11px] tracking-widest uppercase">
+            <span className="material-symbols-outlined text-[16px]">table_chart</span>
+            ACTIVE HOLDINGS ({holdings.length})
+          </div>
+          <div className="flex items-center gap-4">
+            {isSelectionMode ? (
+              <>
+                {holdings.length > 0 && (
+                  <label className="flex items-center gap-1.5 cursor-pointer text-[10px] font-bold text-slate-400 hover:text-slate-200">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.length === holdings.length && holdings.length > 0}
+                      onChange={toggleSelectAll}
+                      className="w-3.5 h-3.5 rounded border-slate-700 bg-slate-800 text-blue-500 focus:ring-blue-500 focus:ring-offset-slate-900"
+                    />
+                    ALL
+                  </label>
+                )}
+                {selectedIds.length > 0 ? (
+                  <button onClick={handleBulkDelete} className="flex items-center gap-1 text-rose-400 hover:text-rose-300 transition-colors text-[11px] font-bold uppercase tracking-wider">
+                    <span className="material-symbols-outlined text-[16px]">delete</span>
+                    DELETE ({selectedIds.length})
+                  </button>
+                ) : (
+                  <button onClick={() => { setIsSelectionMode(false); setSelectedIds([]); }} className="flex items-center gap-1 text-slate-400 hover:text-white transition-colors text-[11px] font-bold uppercase tracking-wider">
+                    <span className="material-symbols-outlined text-[16px]">close</span>
+                    CANCEL
+                  </button>
+                )}
+              </>
+            ) : (
+              <>
+                <button onClick={() => setIsSelectionMode(true)} className="flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors text-[11px] font-bold uppercase tracking-wider">
+                  <span className="material-symbols-outlined text-[16px]">checklist</span>
+                  SELECT
+                </button>
+
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Holdings List */}
+      <div className="space-y-1 pb-4">
+        {isLoading ? (
+          // Skeleton Loader
+          [1, 2, 3].map((i) => (
+            <div key={i} className="-mx-4 bg-slate-950 border-y border-slate-800 rounded-none px-4 py-2.5 relative overflow-hidden">
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-16 h-4 bg-slate-800 rounded animate-pulse"></div>
+                    <div className="w-8 h-3.5 bg-slate-800 rounded animate-pulse"></div>
+                  </div>
+                  <div className="w-12 h-3 bg-slate-800 rounded animate-pulse"></div>
+                </div>
+                <div className="text-right flex flex-col items-end">
+                  <div className="w-16 h-4 bg-slate-800 rounded animate-pulse mb-1"></div>
+                  <div className="w-20 h-3 bg-slate-800 rounded animate-pulse"></div>
+                </div>
+              </div>
+              <div className="flex justify-between items-center pt-2">
+                <div>
+                  <div className="w-12 h-2 bg-slate-800 rounded animate-pulse mb-1"></div>
+                  <div className="w-16 h-3 bg-slate-800 rounded animate-pulse"></div>
+                </div>
+                <div className="flex flex-col items-end">
+                  <div className="w-12 h-2 bg-slate-800 rounded animate-pulse mb-1"></div>
+                  <div className="w-16 h-3 bg-slate-800 rounded animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : !error && holdings.length === 0 && (
+          <div className="text-center py-12 flex flex-col items-center justify-center border border-dashed border-slate-800 rounded-xl bg-slate-900/30">
+            <span className="material-symbols-outlined text-4xl mb-2 text-slate-700">inventory_2</span>
+            <p>No active holdings found.</p>
+            <p className="text-xs text-slate-600 mt-1">Submit an Entry Order to start building a portfolio.</p>
+          </div>
+        )}
+
+        {holdings.map((item, idx) => (
+          <div
+            key={item._id}
+            onClick={() => setExpandedCard(expandedCard === item._id ? null : item._id)}
+            className="-mx-4 bg-slate-950 border-y border-slate-800 rounded-none px-4 py-2.5 relative overflow-hidden group cursor-pointer transition-all select-none"
+          >
+
+            <div className="flex justify-between items-start mb-1.5">
+              <div className="flex items-start gap-2.5">
+                {isSelectionMode && (
+                  <div className="pt-0.5" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(item._id)}
+                      onChange={() => toggleSelection(item._id)}
+                      className="w-4 h-4 rounded border-slate-700 bg-slate-800 text-blue-500 focus:ring-blue-500 focus:ring-offset-slate-900"
+                    />
+                  </div>
+                )}
+                <div>
+                  <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                    <span className="font-bold text-slate-100 text-[14px]">{item.symbol}</span>
+                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border ${item.type === 'Buy' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                      }`}>
+                      {item.type}
+                    </span>
+                    {item.tradeCategory && (
+                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border ${item.tradeCategory === 'delivery'
+                          ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                          : 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20'
+                        }`}>
+                        {item.tradeCategory === 'delivery' ? 'DELIVERY' : 'NORMAL'}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-[10px] text-slate-400 font-medium">
+                    QTY: <span className="font-mono text-slate-200 font-semibold">{item.netQty.toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-slate-400 text-sm">Avg: <span className="font-mono text-slate-200 font-semibold">{formatNumber(item.avgCost)}</span></div>
+
+                <div className= "text-[10px] text-slate-400">LTP: <span className="font-mono text-slate-200 font-semibold">{formatNumber(item.lastPrice)}</span></div>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center mt-1">
+              <div>
+                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">invested</div>
+                <div className="font-mono text-xs font-semibold text-blue-400">{formatNumber(item.totalValue)}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">P/L</div>
+                <div className={`font-mono text-xs font-bold ${item.upnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  {item.upnl >= 0 ? '+' : ''}{formatNumber(item.upnl)}
+                  <span className="block sm:inline-block sm:ml-1 text-[10px] font-semibold opacity-95">
+                    ({item.upnl >= 0 ? '+' : ''}{((item.upnl / (item.totalInvestment || 1)) * 100).toFixed(2)}%)
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Smoothly Expandable Action Panel */}
+            <div className={`grid transition-all duration-300 ease-in-out ${expandedCard === item._id ? 'grid-rows-[1fr] opacity-100 mt-2.5' : 'grid-rows-[0fr] opacity-0 mt-0'}`}>
+              <div className="overflow-hidden">
+                <div className="flex gap-2 pt-2 border-t border-slate-800/80">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setSelectedReceipt(item); }}
+                    className="flex-1 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-colors text-xs font-bold"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">receipt_long</span>
+                    RECEIPT
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDelete(item._id); }}
+                    className="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-colors text-xs font-bold"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">delete</span>
+                    DELETE
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Fullscreen Receipt Overlay */}
+      {selectedReceipt && (
+        <HoldingReceipt
+          customer={customer}
+          holding={selectedReceipt}
+          onClose={() => setSelectedReceipt(null)}
+          onEdit={async (updatedData) => {
+            try {
+              await api.put(`/trades/holdings/edit/${selectedReceipt._id}`, updatedData);
+              fetchHoldings();
+              setSelectedReceipt(null);
+            } catch (err) {
+              console.error(err);
+              showToast(err.response?.data?.message || 'Failed to update holding', 'error');
+            }
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+export default Holdings;
