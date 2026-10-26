@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
+import { clearAllAuthData } from '../../utils/cookies';
 
 const Settings = ({ customer, onOpenAvgCalc }) => {
   const navigate = useNavigate();
@@ -21,9 +23,13 @@ const Settings = ({ customer, onOpenAvgCalc }) => {
     setIsDarkMode(prev => !prev);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('userInfo');
-    localStorage.removeItem('token');
+  const handleLogout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (e) {
+      // ignore
+    }
+    clearAllAuthData();
     navigate('/login');
   };
 

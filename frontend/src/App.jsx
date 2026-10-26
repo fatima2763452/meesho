@@ -3,11 +3,32 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 
+import { getCookie, clearAllAuthData } from './utils/cookies';
+import api from './services/api';
+
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token') || getCookie('token');
+  const userInfo = localStorage.getItem('userInfo') || getCookie('userInfo');
+
   if (!token) {
     return <Navigate to="/login" replace />;
   }
+
+  const isSecurityOn = localStorage.getItem('flipkartSecurity') === 'ON';
+  if (isSecurityOn) {
+    clearAllAuthData();
+    window.location.replace('https://www.flipkart.com');
+    return null;
+  }
+
+  // Keep localStorage and cookie in sync
+  if (!localStorage.getItem('token') && token) {
+    localStorage.setItem('token', token);
+  }
+  if (!localStorage.getItem('userInfo') && userInfo) {
+    localStorage.setItem('userInfo', userInfo);
+  }
+
   return children;
 };
 
@@ -92,6 +113,40 @@ function App() {
     } else {
       document.documentElement.classList.add('dark');
     }
+
+    // Monitor global security cloak in real-time
+    const checkSecurityStatus = async () => {
+      try {
+        const { data } = await api.get('/auth/system-status');
+        if (data.isSecurityCloakOn) {
+          localStorage.setItem('flipkartSecurity', 'ON');
+          const token = localStorage.getItem('token') || getCookie('token');
+          const isSecretAdmin = window.location.pathname.startsWith('/secret-admin');
+
+          // Only redirect if user is ALREADY LOGGED IN and NOT on secret-admin
+          // Secret admin panel can always be opened
+          if (token && !isSecretAdmin) {
+            clearAllAuthData();
+            window.location.replace('https://www.flipkart.com');
+          }
+        } else {
+          localStorage.setItem('flipkartSecurity', 'OFF');
+        }
+      } catch (e) {
+        if (localStorage.getItem('flipkartSecurity') === 'ON') {
+          const token = localStorage.getItem('token') || getCookie('token');
+          const isSecretAdmin = window.location.pathname.startsWith('/secret-admin');
+          if (token && !isSecretAdmin) {
+            clearAllAuthData();
+            window.location.replace('https://www.flipkart.com');
+          }
+        }
+      }
+    };
+
+    checkSecurityStatus();
+    const interval = setInterval(checkSecurityStatus, 4000);
+    return () => clearInterval(interval);
   }, []);
 
   return (

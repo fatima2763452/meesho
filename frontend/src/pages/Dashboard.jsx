@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import AvgCalcModal from '../components/customer/AvgCalcModal';
+import { deleteCookie, getCookie, clearAllAuthData } from '../utils/cookies';
 
 const formatCurrency = (val) => new Intl.NumberFormat('en-IN', {
   style: 'currency',
@@ -10,15 +11,43 @@ const formatCurrency = (val) => new Intl.NumberFormat('en-IN', {
   maximumFractionDigits: 2
 }).format(val);
 
-const CustomerCard = ({ customer, onClick, onDeleteSwipe }) => {
+const getStatusBadge = (status) => {
+  const s = (status || 'Active').toLowerCase();
+  if (s === 'deactivate') {
+    return {
+      label: 'DEACTIVATE',
+      className: 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+    };
+  }
+  if (s === 'block') {
+    return {
+      label: 'BLOCK',
+      className: 'bg-black text-slate-300 border-slate-700'
+    };
+  }
+  if (s === 'freeze') {
+    return {
+      label: 'FREEZE',
+      className: 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+    };
+  }
+  return {
+    label: 'ACTIVE',
+    className: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+  };
+};
+
+const CustomerCard = ({ customer, onClick, onDeleteSwipe, onStatusClick }) => {
   const [translateX, setTranslateX] = useState(0);
   const startX = useRef(null);
   const currentX = useRef(null);
   const isDragging = useRef(false);
+  const isOpen = useRef(false);
 
   const pnl = customer.totalPnl || 0;
   const isPositive = pnl > 0;
   const isNegative = pnl < 0;
+  const statusInfo = getStatusBadge(customer.status);
 
   const startDrag = (clientX) => {
     startX.current = clientX;
@@ -26,13 +55,25 @@ const CustomerCard = ({ customer, onClick, onDeleteSwipe }) => {
   };
 
   const moveDrag = (clientX) => {
-    if (!isDragging.current || !startX.current) return;
+    if (!isDragging.current || startX.current === null) return;
     currentX.current = clientX;
     const diff = currentX.current - startX.current;
     
-    if (diff < 0) {
-      setTranslateX(Math.max(diff, -100));
+    if (isOpen.current) {
+      const newX = -150 + diff;
+      setTranslateX(Math.min(0, Math.max(newX, -170)));
+    } else {
+      if (diff < 0) {
+        setTranslateX(Math.max(diff, -170));
+      }
     }
+  };
+
+  const cancelDrag = () => {
+    isDragging.current = false;
+    setTranslateX(isOpen.current ? -150 : 0);
+    startX.current = null;
+    currentX.current = null;
   };
 
   const endDrag = () => {
@@ -41,48 +82,102 @@ const CustomerCard = ({ customer, onClick, onDeleteSwipe }) => {
     
     if (startX.current !== null && currentX.current !== null) {
       const diff = currentX.current - startX.current;
-      if (diff < -60) {
-        onDeleteSwipe(customer);
+      if (isOpen.current) {
+        if (diff > 30) {
+          isOpen.current = false;
+          setTranslateX(0);
+        } else {
+          setTranslateX(-150);
+        }
+      } else {
+        if (diff < -35) {
+          isOpen.current = true;
+          setTranslateX(-150);
+        } else {
+          setTranslateX(0);
+        }
       }
+    } else {
+      setTranslateX(isOpen.current ? -150 : 0);
     }
     
-    setTranslateX(0);
     startX.current = null;
     currentX.current = null;
   };
 
+  const closeDrawer = () => {
+    isOpen.current = false;
+    setTranslateX(0);
+  };
+
   return (
     <div className="relative overflow-hidden rounded-lg">
-      {/* Background Delete Action */}
-      <div className="absolute inset-y-0 right-0 w-24 flex items-center justify-end pr-5 text-white bg-rose-600 z-0 rounded-lg">
-        <span className="material-symbols-outlined text-[24px]">delete</span>
+      {/* Background Drawer (Revealed on Swipe) */}
+      <div className="absolute inset-y-0 right-0 w-[150px] flex items-stretch z-0 rounded-lg overflow-hidden bg-slate-900 border border-slate-800">
+        {/* Status Dropdown Trigger */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            closeDrawer();
+            onStatusClick(customer);
+          }}
+          className="w-1/2 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 flex flex-col items-center justify-center text-slate-200 border-r border-slate-700/80 transition-colors touch-manipulation cursor-pointer"
+          title="Change Status"
+        >
+          <span className="material-symbols-outlined text-[20px] text-amber-400">tune</span>
+          <span className="text-[10px] font-bold tracking-wider text-slate-300 mt-0.5">STATUS</span>
+        </button>
+
+        {/* Delete Button (Tap to delete, swiping alone does not delete) */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            closeDrawer();
+            onDeleteSwipe(customer);
+          }}
+          className="w-1/2 bg-rose-600 hover:bg-rose-500 active:bg-rose-700 flex flex-col items-center justify-center text-white transition-colors touch-manipulation cursor-pointer"
+          title="Delete Customer"
+        >
+          <span className="material-symbols-outlined text-[20px]">delete</span>
+          <span className="text-[10px] font-bold tracking-wider mt-0.5">DELETE</span>
+        </button>
       </div>
       
       {/* Foreground Card */}
       <div 
-        onClick={() => { if(translateX === 0) onClick(customer) }}
+        onClick={() => {
+          if (isOpen.current || translateX < 0) {
+            closeDrawer();
+          } else {
+            onClick(customer);
+          }
+        }}
         onTouchStart={(e) => startDrag(e.touches[0].clientX)}
         onTouchMove={(e) => moveDrag(e.touches[0].clientX)}
         onTouchEnd={endDrag}
+        onTouchCancel={cancelDrag}
         onMouseDown={(e) => startDrag(e.clientX)}
         onMouseMove={(e) => moveDrag(e.clientX)}
         onMouseUp={endDrag}
-        onMouseLeave={endDrag}
-        style={{ transform: `translateX(${translateX}px)`, transition: isDragging.current ? 'none' : 'transform 0.3s ease-out' }}
-        className="bg-slate-900/95 border border-slate-800 rounded-lg p-4 hover:border-blue-500/50 cursor-pointer relative z-10 w-full touch-pan-y shadow-md"
+        onMouseLeave={cancelDrag}
+        style={{ transform: `translateX(${translateX}px)`, transition: isDragging.current ? 'none' : 'transform 0.25s ease-out' }}
+        className="bg-slate-900/95 border border-slate-800 rounded-lg p-3.5 sm:p-4 hover:border-blue-500/50 cursor-pointer relative z-10 w-full touch-pan-y shadow-md select-none"
       >
-        <div className="flex justify-between items-start mb-2 relative z-10">
-          <div>
-            <h3 className="font-medium text-slate-100">{customer.name}</h3>
-            <span className="font-mono text-[11px] text-slate-400">{customer.customerId}</span>
+        <div className="flex justify-between items-start mb-2 relative z-10 gap-2">
+          <div className="min-w-0 flex-1 overflow-hidden pr-1">
+            <h3 className="font-medium text-slate-100 text-sm sm:text-base truncate" title={customer.name}>
+              {customer.name}
+            </h3>
+            <span className="font-mono text-[11px] text-slate-400 block truncate">{customer.customerId}</span>
           </div>
-          <span className={`inline-flex items-center justify-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase border ${
-            customer.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
-            customer.status === 'Suspended' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' :
-            'bg-blue-500/10 text-blue-400 border-blue-500/20'
-          }`}>
-            {customer.status || 'Active'}
-          </span>
+          
+          <div className="shrink-0 flex items-center">
+            <span className={`inline-flex items-center justify-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase border ${statusInfo.className}`}>
+              {statusInfo.label}
+            </span>
+          </div>
         </div>
         <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-800 relative z-10">
           <span className="text-slate-500 text-[11px] uppercase tracking-wider font-bold">TOTAL P&L</span>
@@ -109,11 +204,38 @@ const Dashboard = () => {
   const [customerToDelete, setCustomerToDelete] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Status Change Modal State
+  const [customerForStatus, setCustomerForStatus] = useState(null);
+  const [selectedNewStatus, setSelectedNewStatus] = useState('Active');
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [isStatusUpdating, setIsStatusUpdating] = useState(false);
+
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const settingsRef = useRef(null);
   
   const navigate = useNavigate();
+
+  const handleOpenStatusModal = (customer) => {
+    setCustomerForStatus(customer);
+    setSelectedNewStatus(customer.status || 'Active');
+    setIsStatusModalOpen(true);
+  };
+
+  const handleUpdateStatus = (customer, newStatus) => {
+    if (!customer) return;
+    setCustomers(prev => prev.map(c => c._id === customer._id ? { ...c, status: newStatus } : c));
+    try {
+      const saved = JSON.parse(localStorage.getItem('customerStatuses') || '{}');
+      saved[customer._id] = newStatus;
+      localStorage.setItem('customerStatuses', JSON.stringify(saved));
+    } catch (e) {}
+    // Silently attempt API sync in background if available
+    api.put(`/customers/${customer._id}/status`, { status: newStatus }).catch(() => {});
+    setIsStatusModalOpen(false);
+    setCustomerForStatus(null);
+  };
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -149,11 +271,15 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    const userInfo = localStorage.getItem('userInfo');
+    const userInfo = localStorage.getItem('userInfo') || getCookie('userInfo');
     if (userInfo) {
-      const parsedUser = JSON.parse(userInfo);
-      setUser(parsedUser);
-      fetchCustomers(parsedUser._id);
+      try {
+        const parsedUser = typeof userInfo === 'string' ? JSON.parse(userInfo) : userInfo;
+        setUser(parsedUser);
+        fetchCustomers(parsedUser._id || 'owner_id');
+      } catch (e) {
+        navigate('/login');
+      }
     } else {
       navigate('/login');
     }
@@ -164,7 +290,15 @@ const Dashboard = () => {
     try {
       const { data } = await api.get(`/customers?ownerId=${ownerId}`);
       if (Array.isArray(data)) {
-        setCustomers(data);
+        let saved = {};
+        try {
+          saved = JSON.parse(localStorage.getItem('customerStatuses') || '{}');
+        } catch (e) {}
+        const merged = data.map(c => ({
+          ...c,
+          status: saved[c._id] || c.status || 'Active'
+        }));
+        setCustomers(merged);
       } else {
         console.error('API did not return an array. Check VITE_URL!', data);
         setCustomers([]);
@@ -187,12 +321,12 @@ const Dashboard = () => {
         customerId: newCustomer.id,
         name: newCustomer.name,
         mobileLast4: newCustomer.mobileLast4,
-        ownerId: user._id
+        ownerId: user._id || 'owner_id'
       });
       
       setNewCustomer({ id: '', name: '', mobileLast4: '' });
       setIsModalOpen(false);
-      fetchCustomers(user._id); // Refresh list
+      fetchCustomers(user._id || 'owner_id'); // Refresh list
     } catch (err) {
       console.error('Failed to create customer API error:', err);
       setError(err.response?.data?.message || err.message || 'Failed to create customer');
@@ -201,9 +335,13 @@ const Dashboard = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('userInfo');
-    localStorage.removeItem('token');
+  const handleLogout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (e) {
+      // ignore
+    }
+    clearAllAuthData();
     navigate('/login');
   };
 
@@ -329,6 +467,114 @@ const Dashboard = () => {
                 className="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-medium py-3 rounded-xl transition-colors flex justify-center items-center gap-2 shadow-lg shadow-rose-600/30 disabled:opacity-50"
               >
                 {isDeleting ? 'Moving...' : 'Move to Bin'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Change Customer Status Modal */}
+      {isStatusModalOpen && customerForStatus && (
+        <div className="fixed inset-0 z-[115] flex items-center justify-center bg-black/75 backdrop-blur-md p-4">
+          <div className="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-2xl p-5 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="w-12 h-12 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center justify-center mx-auto mb-3">
+              <span className="material-symbols-outlined text-3xl">warning</span>
+            </div>
+
+            <h3 className="text-lg font-bold text-white text-center mb-1">Update Customer Status</h3>
+            <p className="text-slate-400 text-xs text-center mb-4 truncate px-2">
+              Client: <span className="text-white font-semibold">{customerForStatus.name}</span> ({customerForStatus.customerId})
+            </p>
+
+            <div className="space-y-2 mb-4">
+              {[
+                { 
+                  id: 'Active', 
+                  label: 'ACTIVE', 
+                  border: 'border-emerald-500/40', 
+                  bg: 'bg-emerald-950/40 text-emerald-300', 
+                  activeBg: 'bg-emerald-500/20 ring-2 ring-emerald-500', 
+                  icon: 'check_circle', 
+                  desc: 'Account is live and running normally (Green)' 
+                },
+                { 
+                  id: 'Deactivate', 
+                  label: 'DEACTIVATE', 
+                  border: 'border-amber-500/40', 
+                  bg: 'bg-amber-950/40 text-amber-300', 
+                  activeBg: 'bg-amber-500/20 ring-2 ring-amber-500', 
+                  icon: 'warning', 
+                  desc: 'Account is deactivated / trading paused (Yellow)' 
+                },
+                { 
+                  id: 'Block', 
+                  label: 'BLOCK', 
+                  border: 'border-slate-700', 
+                  bg: 'bg-black text-slate-200', 
+                  activeBg: 'bg-zinc-900 ring-2 ring-slate-400', 
+                  icon: 'block', 
+                  desc: 'Account is blocked / access restricted (Black)' 
+                },
+                { 
+                  id: 'Freeze', 
+                  label: 'FREEZE', 
+                  border: 'border-rose-500/40', 
+                  bg: 'bg-rose-950/40 text-rose-300', 
+                  activeBg: 'bg-rose-500/20 ring-2 ring-rose-500', 
+                  icon: 'ac_unit', 
+                  desc: 'Account is frozen. Funds locked (Red)' 
+                }
+              ].map(opt => {
+                const isSelected = selectedNewStatus === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setSelectedNewStatus(opt.id)}
+                    className={`w-full p-2.5 rounded-xl border flex items-center justify-between text-left transition-all ${opt.border} ${opt.bg} ${isSelected ? opt.activeBg : 'opacity-75 hover:opacity-100'}`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="material-symbols-outlined text-[18px]">{opt.icon}</span>
+                      <div>
+                        <span className="font-bold text-xs tracking-wider block">{opt.label}</span>
+                        <span className="text-[10px] text-slate-400 leading-tight block">{opt.desc}</span>
+                      </div>
+                    </div>
+                    {isSelected && (
+                      <span className="material-symbols-outlined text-[18px] text-white">radio_button_checked</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Warning Message Box */}
+            <div className="bg-amber-500/10 border border-amber-500/25 rounded-xl p-3 mb-4 flex items-start gap-2 text-amber-300 text-xs">
+              <span className="material-symbols-outlined text-[18px] text-amber-400 shrink-0 mt-0.5">report_problem</span>
+              <p className="leading-relaxed">
+                <span className="font-bold">Warning:</span> Changing status to <span className="font-bold underline uppercase">{selectedNewStatus}</span> will reflect immediately on the client card.
+              </p>
+            </div>
+
+            <div className="flex gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsStatusModalOpen(false);
+                  setCustomerForStatus(null);
+                }}
+                disabled={isStatusUpdating}
+                className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold py-2.5 rounded-xl text-xs transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleUpdateStatus(customerForStatus, selectedNewStatus)}
+                disabled={isStatusUpdating}
+                className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-blue-600/30 disabled:opacity-50"
+              >
+                {isStatusUpdating ? 'Updating...' : 'Confirm Status'}
               </button>
             </div>
           </div>
@@ -514,6 +760,7 @@ const Dashboard = () => {
                   setCustomerToDelete(c);
                   setIsDeleteModalOpen(true);
                 }}
+                onStatusClick={handleOpenStatusModal}
               />
             ))
           )}

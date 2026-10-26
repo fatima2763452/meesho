@@ -1,11 +1,11 @@
 const express = require('express');
-const { 
-  createCustomer, 
-  getCustomers, 
+const {
+  createCustomer,
+  getCustomers,
   getDeletedCustomers,
-  softDeleteCustomer, 
-  restoreCustomer, 
-  permanentDeleteCustomer 
+  softDeleteCustomer,
+  restoreCustomer,
+  permanentDeleteCustomer
 } = require('../controllers/customerController');
 const router = express.Router();
 
