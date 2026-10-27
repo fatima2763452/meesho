@@ -232,7 +232,7 @@ const HoldingReceipt = ({ customer, holding, onClose, onEdit }) => {
                   )}
                 </div>
                 <div className={`flex justify-between items-center pb-2 border-b border-solid ${theme === 'dark' ? 'border-slate-600' : 'border-slate-300'}`}>
-                  <span className={`text-sm ${theme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>Avg</span>
+                  <span className={`text-sm ${theme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>AVG</span>
                   {isEditing ? (
                     <input type="number" className="w-24 bg-slate-800 text-white rounded px-2 py-1 text-sm text-right" value={editData.price} onChange={e => setEditData({ ...editData, price: e.target.value })} />
                   ) : (

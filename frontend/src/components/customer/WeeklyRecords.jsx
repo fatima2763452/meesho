@@ -281,7 +281,7 @@ const WeeklyRecords = ({ customer, onEditRequest }) => {
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-slate-400 text-sm">Avg: <span className="font-mono text-slate-200 font-semibold">{formatNumber(item.price)}</span></div>
+                <div className="text-slate-400 text-sm">AVG: <span className="font-mono text-slate-200 font-semibold">{formatNumber(item.price)}</span></div>
                 <div className="text-[10px] text-slate-400">LTP: <span className="text-slate-300">{formatNumber(item.ltp)}</span></div>
               </div>
             </div>
@@ -292,7 +292,7 @@ const WeeklyRecords = ({ customer, onEditRequest }) => {
                 <div className="font-mono text-xs font-semibold text-blue-400">{formatNumber(item.estimatedTotal)}</div>
               </div>
               <div className="text-right">
-                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">P/L</div>
+                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">P&L</div>
                 <div className={`font-mono text-xs font-bold ${getCalculatedRealizedPnl(item) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                   {getCalculatedRealizedPnl(item) >= 0 ? '+' : ''}{formatNumber(getCalculatedRealizedPnl(item))}
                   <span className="block sm:inline-block sm:ml-1 text-[10px] font-semibold opacity-95">
