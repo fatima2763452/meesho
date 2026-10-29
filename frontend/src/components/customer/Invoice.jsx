@@ -676,7 +676,7 @@ export default function Invoice() {
             </div>
 
             {/* Invoice Document - ID added for html2canvas */}
-            <div id="invoice-content" className="max-w-4xl mx-auto border border-[#e5e7eb] p-8 bg-white shadow-sm print:shadow-none print:border-none">
+            <div id="invoice-content" className="max-w-4xl mx-auto border border-[#e5e7eb] p-8 bg-white print:border-none">
 
                 {/* Header */}
                 <div className="flex justify-between items-center pb-6 mb-6">
@@ -701,7 +701,7 @@ export default function Invoice() {
                 <div style={{ height: '24px', width: '100%' }}></div>
 
                 {/* Table */}
-                <div className="overflow-hidden rounded-xl border border-slate-200/80 shadow-sm">
+                <div className="overflow-hidden rounded-xl border border-slate-200/80">
                     <table className="w-full text-sm text-left border-collapse">
                         <thead style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }} className="bg-[#0f172a] text-white font-bold uppercase text-[11px] tracking-wider">
                             <tr>
@@ -746,7 +746,7 @@ export default function Invoice() {
                                     <td className="px-4 py-4 text-right text-slate-700 font-medium">
                                         {formatIndianCurrency(item.totalBrokerage)}
                                     </td>
-                                    <td className={`px-4 py-4 text-right font-extrabold whitespace-nowrap ${item.netPnl >= 0 ? 'text-[#00B050]' : 'text-[#ef4444]'}`}>
+                                    <td className={`px-4 py-4 text-right font-extrabold whitespace-nowrap ${item.netPnl >= 0 ? 'text-[#00B050]' : 'text-[#dc2626]'}`}>
                                         {formatProfitLoss(item.netPnl)}
                                     </td>
                                 </tr>
@@ -771,14 +771,14 @@ export default function Invoice() {
                     </div>
 
                     {/* Summary Card */}
-                    <div style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }} className="summary-card w-72 bg-slate-50/50 border border-slate-200/60 rounded-xl p-4 space-y-2.5 shadow-sm">
+                    <div style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }} className="summary-card w-72 bg-slate-50/50 border border-slate-200/60 rounded-xl p-4 space-y-2.5">
                         <div className="flex justify-between text-xs font-semibold text-slate-500 uppercase">
                             <span>Total Profit</span>
                             <span className="text-[#00B050] font-bold">{formatIndianCurrency(summary.totalProfit)}</span>
                         </div>
                         <div className="flex justify-between text-xs font-semibold text-slate-500 uppercase">
                             <span>Total Loss</span>
-                            <span className="text-[#ef4444] font-bold">{formatIndianCurrency(summary.totalLoss)}</span>
+                            <span className="text-[#dc2626] font-bold">{formatIndianCurrency(summary.totalLoss)}</span>
                         </div>
                         <div className="flex justify-between text-xs font-semibold text-slate-500 uppercase">
                             <span>Total Brokerage</span>
@@ -786,10 +786,10 @@ export default function Invoice() {
                         </div>
                         <div className="border-t border-dashed border-slate-200/80 my-2"></div>
                         <div className="flex justify-between text-sm font-bold uppercase">
-                            <span className={summary.netPnl >= 0 ? 'text-[#00B050]' : 'text-[#ef4444]'}>
+                            <span className={summary.netPnl >= 0 ? 'text-[#00B050]' : 'text-[#dc2626]'}>
                                 {summary.netPnl >= 0 ? 'Net Profit' : 'Net Loss'}
                             </span>
-                            <span className={`font-extrabold text-base ${summary.netPnl >= 0 ? 'text-[#00B050]' : 'text-[#ef4444]'}`}>
+                            <span className={`font-extrabold text-base ${summary.netPnl >= 0 ? 'text-[#00B050]' : 'text-[#dc2626]'}`}>
                                 {formatProfitLoss(summary.netPnl)}
                             </span>
                         </div>

@@ -576,7 +576,7 @@ export default function MarginReceipt() {
                 <button onClick={() => setGenerated(false)} className="flex items-center gap-2 text-gray-600 hover:text-black font-semibold text-sm transition-colors">
                     <ArrowLeft className="w-4 h-4" /> Back to Edit
                 </button>
-                <button onClick={handleDownloadPDF} disabled={loading} className="flex items-center gap-2 bg-[#00B050] text-white px-5 py-2.5 rounded-lg hover:bg-[#009040] font-bold shadow-lg shadow-green-500/10 transition-all text-sm">
+                <button onClick={handleDownloadPDF} disabled={loading} className="flex items-center gap-2 bg-[#00B050] text-white px-5 py-2.5 rounded-lg hover:bg-[#009040] font-bold transition-all text-sm">
                     <Download className="w-4 h-4" /> {loading ? 'Downloading...' : 'Download PDF'}
                 </button>
             </div>

@@ -108,7 +108,7 @@ const Holdings = ({ customer, onEditRequest }) => {
               {formatCurrency(totalEquity)}
             </div>
             <div className="flex items-center gap-2">
-              <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold border ${totalUpnl >= 0 ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/15 text-rose-400 border-rose-500/30'}`}>
+              <span className={`inline-flex items-center gap-1 text-xs font-bold ${totalUpnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                 <span className="material-symbols-outlined text-[14px]">{totalUpnl >= 0 ? 'trending_up' : 'trending_down'}</span>
                 {totalUpnl >= 0 ? '+' : ''}{formatCurrency(totalUpnl)} ({totalUpnl >= 0 ? '+' : ''}{totalUpnlPct.toFixed(2)}%)
               </span>
@@ -254,7 +254,7 @@ const Holdings = ({ customer, onEditRequest }) => {
               </div>
               <div className="text-right">
                 <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">P&L</div>
-                <div className={`font-mono text-xs font-bold ${item.upnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                <div className={`font-mono text-xs font-bold ${item.upnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                   {item.upnl >= 0 ? '+' : ''}{formatNumber(item.upnl)}
                   <span className="block sm:inline-block sm:ml-1 text-[10px] font-semibold opacity-95">
                     ({item.upnl >= 0 ? '+' : ''}{((item.upnl / (item.totalInvestment || 1)) * 100).toFixed(2)}%)

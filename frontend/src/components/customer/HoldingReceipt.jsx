@@ -194,7 +194,7 @@ const HoldingReceipt = ({ customer, holding, onClose, onEdit }) => {
             </div>
 
             {/* Holding Details Table */}
-            <div className={`rounded-xl border overflow-hidden ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+            <div className={`rounded-xl border overflow-hidden ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
               <div className="px-4 py-1.5 text-center bg-blue-600">
                 <h4 className="text-white text-lg font-bold tracking-wider uppercase">
                   {(isEditing ? editData.tradeCategory : (holding.tradeCategory || 'normal')) === 'delivery' ? 'DELIVERY' : 'NORMAL'}
@@ -284,7 +284,7 @@ const HoldingReceipt = ({ customer, holding, onClose, onEdit }) => {
                 {!isEditing && (
                   <div className="flex justify-between items-center pt-1">
                     <span className={`text-sm font-bold ${theme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>P&L</span>
-                    <span className={`text-sm font-bold ${displayTotalPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                    <span className={`text-sm font-bold ${displayTotalPnl >= 0 ? 'text-emerald-600 dark:text-emerald-500' : 'text-rose-600 dark:text-rose-500'}`}>
                       {displayTotalPnl >= 0 ? '+' : ''}{formatCurrency(displayTotalPnl)}
                       <span className="text-xs ml-1.5 font-bold">
                         ({getPnlPercent(displayTotalPnl, displayInvested)})
@@ -317,7 +317,7 @@ const HoldingReceipt = ({ customer, holding, onClose, onEdit }) => {
           {onEdit && !isEditing && (
             <button
               onClick={() => setIsEditing(true)}
-              className="flex-1 py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold text-slate-800 bg-emerald-400 hover:bg-emerald-300 transition-colors shadow-lg shadow-emerald-500/20"
+              className="flex-1 py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold text-slate-800 bg-emerald-400 hover:bg-emerald-300 transition-colors"
             >
               EDIT
             </button>
@@ -326,7 +326,7 @@ const HoldingReceipt = ({ customer, holding, onClose, onEdit }) => {
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="flex-1 py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold text-white bg-green-600 hover:bg-green-500 transition-colors shadow-lg shadow-green-600/20"
+              className="flex-1 py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold text-white bg-green-600 hover:bg-green-500 transition-colors"
             >
               {isSaving ? 'SAVING...' : 'SAVE'}
             </button>
@@ -334,7 +334,7 @@ const HoldingReceipt = ({ customer, holding, onClose, onEdit }) => {
 
           <button
             onClick={handleDownload}
-            className="flex-1 py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold text-white bg-black hover:bg-slate-900 transition-colors shadow-lg border border-slate-800"
+            className="flex-1 py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold text-white bg-black hover:bg-slate-900 transition-colors border border-slate-800"
           >
 
             SAVE PDF

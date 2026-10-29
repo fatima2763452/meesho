@@ -163,7 +163,7 @@ const CustomerCard = ({ customer, onClick, onDeleteSwipe, onStatusClick }) => {
         onMouseUp={endDrag}
         onMouseLeave={cancelDrag}
         style={{ transform: `translateX(${translateX}px)`, transition: isDragging.current ? 'none' : 'transform 0.25s ease-out' }}
-        className="bg-slate-900/95 border border-slate-800 rounded-lg p-3.5 sm:p-4 hover:border-blue-500/50 cursor-pointer relative z-10 w-full touch-pan-y shadow-md select-none"
+        className="bg-slate-900/95 border border-slate-800 rounded-lg p-3.5 sm:p-4 hover:border-blue-500/50 cursor-pointer relative z-10 w-full touch-pan-y select-none"
       >
         <div className="flex justify-between items-start mb-2 relative z-10 gap-2">
           <div className="min-w-0 flex-1 overflow-hidden pr-1">
@@ -182,7 +182,7 @@ const CustomerCard = ({ customer, onClick, onDeleteSwipe, onStatusClick }) => {
         <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-800 relative z-10">
           <span className="text-slate-500 text-[11px] uppercase tracking-wider font-bold">TOTAL P&L</span>
           <span className={`font-mono text-xs font-bold ${
-            isPositive ? 'text-emerald-400' : isNegative ? 'text-rose-400' : 'text-slate-500'
+            isPositive ? 'text-emerald-500' : isNegative ? 'text-rose-500' : 'text-slate-500'
           }`}>
             {pnl !== 0 ? (isPositive ? '+' : '') + formatCurrency(pnl) : '₹0.00'}
           </span>
