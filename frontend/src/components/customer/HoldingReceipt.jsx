@@ -242,7 +242,7 @@ const HoldingReceipt = ({ customer, holding, onClose, onEdit }) => {
                 {!isEditing && (
                   <div className={`flex justify-between items-center pb-2 border-b border-solid ${theme === 'dark' ? 'border-slate-600' : 'border-slate-300'}`}>
                     <span className={`text-sm ${theme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>{isBuy ? 'Invested' : 'Invested'}</span>
-                    <span className={`text-sm font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{formatCurrency(displayInvested)}</span>
+                    <span className={`text-sm font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{formatNumber(displayInvested)}</span>
                   </div>
                 )}
                 <div className={`flex justify-between items-center pb-2 border-b border-solid ${theme === 'dark' ? 'border-slate-600' : 'border-slate-300'}`}>
@@ -277,7 +277,7 @@ const HoldingReceipt = ({ customer, holding, onClose, onEdit }) => {
                       <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${theme === 'dark' ? 'bg-slate-800 text-slate-400' : 'bg-slate-200 text-slate-600'}`}>
                         0.01%
                       </span>
-                      {formatCurrency(holding.totalBrokerage || 0)}
+                      {formatNumber(holding.totalBrokerage || 0)}
                     </span>
                   )}
                 </div>
@@ -285,7 +285,7 @@ const HoldingReceipt = ({ customer, holding, onClose, onEdit }) => {
                   <div className="flex justify-between items-center pt-1">
                     <span className={`text-sm font-bold ${theme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>P&L</span>
                     <span className={`text-sm font-bold ${displayTotalPnl >= 0 ? 'text-emerald-600 dark:text-emerald-500' : 'text-rose-600 dark:text-rose-500'}`}>
-                      {displayTotalPnl >= 0 ? '+' : ''}{formatCurrency(displayTotalPnl)}
+                      {displayTotalPnl >= 0 ? '+' : ''}{formatNumber(displayTotalPnl)}
                       <span className="text-xs ml-1.5 font-bold">
                         ({getPnlPercent(displayTotalPnl, displayInvested)})
                       </span>

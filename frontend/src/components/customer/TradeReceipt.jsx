@@ -294,7 +294,7 @@ const TradeReceipt = ({ trade, customer, type, onClose, onEdit }) => {
                 {!isEditing && (
                   <div className={`flex justify-between items-center pb-2 border-b border-solid ${theme === 'dark' ? 'border-slate-600' : 'border-slate-300'}`}>
                     <span className={`text-sm ${theme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>{isShortExit ? 'Invested' : 'Invested'}</span>
-                    <span className={`text-sm font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{formatCurrency((isExit ? trade.price : (trade.entryPrice || 0)) * trade.quantity)}</span>
+                    <span className={`text-sm font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{formatNumber((isExit ? trade.price : (trade.entryPrice || 0)) * trade.quantity)}</span>
                   </div>
                 )}
                 
@@ -353,7 +353,7 @@ const TradeReceipt = ({ trade, customer, type, onClose, onEdit }) => {
                       <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${theme === 'dark' ? 'bg-slate-800 text-slate-400' : 'bg-slate-200 text-slate-600'}`}>
                         0.01%
                       </span>
-                      {formatCurrency(trade.brokerageFee || 0)}
+                      {formatNumber(trade.brokerageFee || 0)}
                     </span>
                   )}
                 </div>
@@ -362,7 +362,7 @@ const TradeReceipt = ({ trade, customer, type, onClose, onEdit }) => {
                   <div className="flex justify-between items-center pt-1">
                     <span className={`text-sm font-bold ${theme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>P&L</span>
                     <span className={`text-sm font-bold ${originalRealizedPnl >= 0 ? 'text-emerald-600 dark:text-emerald-500' : 'text-rose-600 dark:text-rose-500'}`}>
-                      {originalRealizedPnl >= 0 ? '+' : ''}{formatCurrency(originalRealizedPnl)}
+                      {originalRealizedPnl >= 0 ? '+' : ''}{formatNumber(originalRealizedPnl)}
                       <span className="text-xs ml-1.5 font-bold">
                         ({getPnlPercent(originalRealizedPnl, investedAmount)})
                       </span>
