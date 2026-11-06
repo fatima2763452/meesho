@@ -4,34 +4,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import html2canvas from 'html2canvas-pro';
 import { jsPDF } from 'jspdf';
 import api from '../../services/api';
-import logo from '../../assets/logo.jpeg';
 
 import autoTable from "jspdf-autotable";
-const loadImageAsBase64 = (src) => {
-    return new Promise((resolve) => {
-        const img = new Image();
-        img.crossOrigin = 'Anonymous';
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.naturalWidth;
-            canvas.height = img.naturalHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0);
-            resolve(canvas.toDataURL('image/png'));
-        };
-        img.onerror = () => resolve(null);
-        img.src = src;
-    });
-};
 
-const getImgDimensions = (src) => {
-    return new Promise((resolve) => {
-        const img = new Image();
-        img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
-        img.onerror = () => resolve({ width: 2, height: 1 });
-        img.src = src;
-    });
-};
 // Helper for standard Indian currency formatting
 const formatIndianCurrency = (n) => {
     const num = Number(n ?? 0);
@@ -272,18 +247,18 @@ export default function Invoice() {
             const redColor = [239, 68, 68];     // Red (#ef4444)
             const contentW = pageW - 2 * marginSize;
 
-            // Load logo as base64 and get image size
-            const [logoBase64, dims] = await Promise.all([
-                loadImageAsBase64(logo),
-                getImgDimensions(logo)
-            ]);
+            // Header Elements (STATEMENT on the left in black bold font with dark black underline from S to T)
+            const statementTitle = 'STATEMENT';
+            pdf.setTextColor(0, 0, 0);
+            pdf.setFont(activeFont, 'bold');
+            pdf.setFontSize(24);
+            const statementY = cursorY + 32;
+            pdf.text(statementTitle, marginSize, statementY);
 
-            // Header Elements (Logo on the left)
-            if (logoBase64) {
-                const logoH = 65; // height in pt
-                const logoW = (dims.width / dims.height) * logoH;
-                pdf.addImage(logoBase64, 'JPEG', marginSize, cursorY, logoW, logoH);
-            }
+            const statementW = pdf.getTextWidth(statementTitle);
+            pdf.setDrawColor(0, 0, 0);
+            pdf.setLineWidth(2);
+            pdf.line(marginSize, statementY + 4, marginSize + statementW, statementY + 4);
 
             // Right elements aligned to the right (Invoice info)
             const rightX = pageW - marginSize;
@@ -681,7 +656,12 @@ export default function Invoice() {
                 {/* Header */}
                 <div className="flex justify-between items-center pb-6 mb-6">
                     <div>
-                        <img src={logo} alt="Logo" style={{ height: '170px', maxWidth: '300px', objectFit: 'contain' }} />
+                        <div className="inline-block">
+                            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-wider text-black uppercase font-sans">
+                                STATEMENT
+                            </h1>
+                            <div className="h-[2.5px] bg-black w-full mt-1.5"></div>
+                        </div>
                     </div>
 
                     <div className="text-right mt-2">

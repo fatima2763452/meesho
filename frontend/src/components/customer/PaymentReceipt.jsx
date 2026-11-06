@@ -3,47 +3,6 @@ import { ArrowLeft, Download } from 'lucide-react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
 import api from '../../services/api';
-import logo from '../../assets/logo.jpeg';
-
-const loadImageAsBase64 = (src) => {
-    return new Promise((resolve) => {
-        const img = new Image();
-        img.crossOrigin = 'Anonymous';
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.naturalWidth;
-            canvas.height = img.naturalHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0);
-            resolve(canvas.toDataURL('image/png'));
-        };
-        img.onerror = () => resolve(null);
-        img.src = src;
-    });
-};
-
-const getImgDimensions = (src) => {
-    return new Promise((resolve) => {
-        const img = new Image();
-        img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
-        img.onerror = () => resolve({ width: 2, height: 1 });
-        img.src = src;
-    });
-};
-
-let logoAssetCache = null;
-
-const getLogoAsset = async (src) => {
-    if (logoAssetCache) return logoAssetCache;
-    const [base64, dims] = await Promise.all([
-        loadImageAsBase64(src),
-        getImgDimensions(src)
-    ]);
-    if (base64) {
-        logoAssetCache = { base64, dims };
-    }
-    return { base64, dims };
-};
 
 // Helper for Indian currency formatting
 const formatIndianCurrency = (n) => {
@@ -123,9 +82,6 @@ export default function PaymentReceipt() {
         const year = new Date().getFullYear();
         const randNum = Math.floor(1000 + Math.random() * 9000);
         setReceiptNo(`PR-${year}-${randNum}`);
-
-        // Prefill asset caches
-        getLogoAsset(logo);
 
         // Fetch Customer details from DB or location state
         const fetchCustomerDetails = async () => {
@@ -211,9 +167,6 @@ export default function PaymentReceipt() {
             const pageW = pdf.internal.pageSize.getWidth();   // 595.28
             const pageH = pdf.internal.pageSize.getHeight();  // 841.89
 
-            // Load assets
-            const { base64: logoBase64, dims: logoDims } = await getLogoAsset(logo);
-
             // Draw outer border (dark navy blue)
             pdf.setDrawColor(0, 8, 57);
             pdf.setLineWidth(1.5);
@@ -221,26 +174,11 @@ export default function PaymentReceipt() {
 
             let cursorY = 40;
 
-            // Logo (Left)
-            if (logoBase64) {
-                const logoH = 70; 
-                const logoW = (logoDims.width / logoDims.height) * logoH;
-                pdf.addImage(logoBase64, 'JPEG', 40, cursorY, logoW, logoH);
-            }
-
-            cursorY += 75;
-
-            // Centered Payment Receipt Capsule
-            const capsuleW = 160;
-            const capsuleH = 22;
-            const capsuleX = (pageW - capsuleW) / 2;
-            pdf.setFillColor(0, 8, 57);
-            pdf.roundedRect(capsuleX, cursorY, capsuleW, capsuleH, 5, 5, 'F');
-
-            pdf.setTextColor(255, 255, 255);
+            // Header (PAYMENT RECEIPT in black bold font)
+            pdf.setTextColor(0, 0, 0);
             pdf.setFont(activeFont, 'bold');
-            pdf.setFontSize(10);
-            pdf.text("PAYMENT RECEIPT", pageW / 2, cursorY + 14, { align: 'center' });
+            pdf.setFontSize(22);
+            pdf.text("PAYMENT RECEIPT", 40, cursorY + 16);
 
             cursorY += 40;
 
@@ -551,14 +489,9 @@ export default function PaymentReceipt() {
                     {/* Header */}
                     <div className="flex justify-between items-start pb-4">
                         <div>
-                            <img src={logo} alt="Grow Capital Logo" className="h-15 w-auto object-contain" />
-                        </div>
-                    </div>
-
-                    {/* Centered Capsule Title */}
-                    <div className="flex justify-center my-6">
-                        <div className="bg-[#000839] text-white px-6 py-1.5 rounded-full font-bold text-xs uppercase tracking-wider">
-                            PAYMENT RECEIPT
+                            <h1 className="text-2xl sm:text-3xl font-black tracking-wider text-black uppercase font-sans">
+                                PAYMENT RECEIPT
+                            </h1>
                         </div>
                     </div>
 
