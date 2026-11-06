@@ -257,7 +257,7 @@ export default function Invoice() {
 
             const statementW = pdf.getTextWidth(statementTitle);
             pdf.setDrawColor(0, 0, 0);
-            pdf.setLineWidth(2);
+            pdf.setLineWidth(1);
             pdf.line(marginSize, statementY + 4, marginSize + statementW, statementY + 4);
 
             // Right elements aligned to the right (Invoice info)
@@ -660,7 +660,7 @@ export default function Invoice() {
                             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-wider text-black uppercase font-sans">
                                 STATEMENT
                             </h1>
-                            <div className="h-[2.5px] bg-black w-full mt-1.5"></div>
+                            <div className="h-[1.5px] bg-black w-full mt-1"></div>
                         </div>
                     </div>
 
