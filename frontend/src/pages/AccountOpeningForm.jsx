@@ -201,7 +201,7 @@ const AccountOpeningForm = () => {
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div style={{ display: 'inline-block', alignSelf: 'flex-start' }}>
                 <h1 style={{ fontSize: '30px', fontWeight: '800', letterSpacing: '1px', color: '#000000', margin: '0', textTransform: 'uppercase', fontFamily: 'sans-serif' }}>
-                  S G PVT. LTD.
+                  SG PVT LTD.
                 </h1>
                 <div style={{ height: '1.5px', backgroundColor: '#000000', width: '100%', marginTop: '4px' }}></div>
               </div>
@@ -338,7 +338,7 @@ const AccountOpeningForm = () => {
                   textTransform: "uppercase"
                 }}
               >
-                H G PVT. LTD.
+                SG PVT LTD.
               </div>
             </div>
           </div>
@@ -367,7 +367,7 @@ const AccountOpeningForm = () => {
                 <div className="flex-1 flex flex-col gap-2">
                   <div className="inline-block self-start">
                     <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wider text-black uppercase font-sans">
-                      S G PVT. LTD.
+                      SG PVT LTD.
                     </h1>
                     <div className="h-[1.5px] bg-black w-full mt-1"></div>
                   </div>
@@ -459,7 +459,7 @@ const AccountOpeningForm = () => {
                     <strong>Note:</strong> We are not registered with SEBI. High-leverage trading involves significant financial risk. Please trade at your own risk. The company shall not be responsible for any profit, loss, or financial consequences arising from your trading activities.
                   </div>
                   <div className="mt-4 text-black text-[11px] font-extrabold tracking-widest uppercase">
-                    S G PVT. LTD.
+                    SG PVT LTD.
                   </div>
                 </div>
               </div>
