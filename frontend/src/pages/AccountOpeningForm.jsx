@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from '../assets/logo.jpeg';
 
 const AccountOpeningForm = () => {
   const navigate = useNavigate();
@@ -98,7 +97,6 @@ const AccountOpeningForm = () => {
         <form onSubmit={handleSubmit} className="bg-slate-900 border border-slate-800 rounded-xl p-6 md:p-10 shadow-xl">
           <div className="mb-8 border-b border-slate-800 pb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              {/* <img src={logo} alt="Grow Capital Logo" className="h-12 w-auto object-contain mb-2" /> */}
               <p className="text-blue-400 text-sm font-bold uppercase tracking-wider">Account Opening Form</p>
             </div>
             <div className="text-slate-500 text-sm md:text-right">
@@ -200,9 +198,14 @@ const AccountOpeningForm = () => {
         <div id="pdf-content" style={{ backgroundColor: '#ffffff', color: '#000000', border: '1.5px solid #000000', padding: '40px', fontFamily: 'sans-serif', width: '800px', minHeight: '1160px', position: 'relative', boxSizing: 'border-box' }}>
           {/* Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #1e293b', paddingBottom: '24px', marginBottom: '32px' }}>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <img src={logo} alt="Grow Capital Logo" style={{ height: '140px', width: 'auto', objectFit: 'contain', alignSelf: 'flex-start' }} />
-              <p style={{ fontSize: '15px', fontWeight: '700', color: '#334155', margin: '0', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'inline-block', alignSelf: 'flex-start' }}>
+                <h1 style={{ fontSize: '30px', fontWeight: '800', letterSpacing: '1px', color: '#000000', margin: '0', textTransform: 'uppercase', fontFamily: 'sans-serif' }}>
+                  S G PVT. LTD.
+                </h1>
+                <div style={{ height: '1.5px', backgroundColor: '#000000', width: '100%', marginTop: '4px' }}></div>
+              </div>
+              <p style={{ fontSize: '15px', fontWeight: '700', color: '#334155', margin: '0', letterSpacing: '0.5px', textTransform: 'uppercase', marginTop: '6px' }}>
                 Trading account segment activation
               </p>
             </div>
@@ -335,7 +338,7 @@ const AccountOpeningForm = () => {
                   textTransform: "uppercase"
                 }}
               >
-                GROW CAPITAL PVT. LTD.
+                H G PVT. LTD.
               </div>
             </div>
           </div>
@@ -362,8 +365,13 @@ const AccountOpeningForm = () => {
               {/* Header inside preview */}
               <div className="flex justify-between items-start border-b-2 border-slate-800 pb-4 mb-6">
                 <div className="flex-1 flex flex-col gap-2">
-                  <img src={logo} alt="Grow Capital Logo" className="h-16 w-auto object-contain align-start self-start" />
-                  <p className="text-[12px] font-bold text-slate-600 uppercase tracking-wide m-0">
+                  <div className="inline-block self-start">
+                    <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wider text-black uppercase font-sans">
+                      S G PVT. LTD.
+                    </h1>
+                    <div className="h-[1.5px] bg-black w-full mt-1"></div>
+                  </div>
+                  <p className="text-[12px] font-bold text-slate-600 uppercase tracking-wide m-0 mt-1">
                     Trading account segment activation
                   </p>
                 </div>
@@ -451,7 +459,7 @@ const AccountOpeningForm = () => {
                     <strong>Note:</strong> We are not registered with SEBI. High-leverage trading involves significant financial risk. Please trade at your own risk. The company shall not be responsible for any profit, loss, or financial consequences arising from your trading activities.
                   </div>
                   <div className="mt-4 text-black text-[11px] font-extrabold tracking-widest uppercase">
-                    GROW CAPITAL PVT. LTD.
+                    S G PVT. LTD.
                   </div>
                 </div>
               </div>
