@@ -14,6 +14,7 @@ const AccountOpeningForm = () => {
     aadhaarLast4: '',
     panLast4: '',
     refName: '',
+    referCodeName: '',
     initialDeposit: '',
     applicationDate: new Date().toISOString().split('T')[0],
   });
@@ -121,6 +122,8 @@ const AccountOpeningForm = () => {
               <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Segment</label>
               <select name="segment" value={formData.segment} onChange={handleChange} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 focus:border-blue-500 outline-none">
                 <option value="F&O">F&O</option>
+                <option value="Future">Future</option>
+                <option value="Option">Option</option>
                 <option value="MCX">MCX</option>
               </select>
             </div>
@@ -168,18 +171,22 @@ const AccountOpeningForm = () => {
               </div>
             </div>
 
-            {/* Reference Name & Date of Application - Side-by-side */}
+            {/* Reference Name & Refer Code Name - Side-by-side */}
             <div>
               <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Reference Name</label>
               <input type="text" name="refName" value={formData.refName} onChange={handleChange} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 focus:border-blue-500 outline-none" placeholder="Who referred this customer?" />
             </div>
             <div>
+              <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Refer Code Name</label>
+              <input type="text" name="referCodeName" value={formData.referCodeName} onChange={handleChange} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 focus:border-blue-500 outline-none" placeholder="Enter refer code name" />
+            </div>
+
+            {/* Date of Application & Upload Photo - Side-by-side */}
+            <div>
               <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Date of Application</label>
               <input type="date" name="applicationDate" value={formData.applicationDate} onChange={handleChange} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 focus:border-blue-500 outline-none [color-scheme:dark]" />
             </div>
-
-            {/* Upload Photo - Full Width */}
-            <div className="md:col-span-2">
+            <div>
               <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Upload Photo</label>
               <input type="file" accept="image/*" onChange={handlePhotoUpload} className="w-full text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-900 file:text-blue-200 hover:file:bg-blue-800" />
             </div>
@@ -200,7 +207,7 @@ const AccountOpeningForm = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #1e293b', paddingBottom: '24px', marginBottom: '32px' }}>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div style={{ display: 'inline-block', alignSelf: 'flex-start' }}>
-                <h1 style={{ fontSize: '30px', fontWeight: '800', letterSpacing: '1px', color: '#000000', margin: '0', textTransform: 'uppercase', fontFamily: 'sans-serif' }}>
+                <h1 style={{ fontSize: '40px', fontWeight: '800', letterSpacing: '1px', color: '#000000', margin: '0', textTransform: 'uppercase', fontFamily: 'sans-serif' }}>
                   SG PVT LTD.
                 </h1>
                 <div style={{ height: '1.5px', backgroundColor: '#000000', width: '100%', marginTop: '4px' }}></div>
@@ -276,12 +283,20 @@ const AccountOpeningForm = () => {
               </div>
             </div>
 
-            {/* Row 6: Reference Name & Date of Application */}
+            {/* Row 6: Reference Name & Refer Code Name */}
             <div style={rowStyle}>
               <div style={colItemStyle}>
                 <span style={labelStyle}>Reference Name :</span>
                 <span style={valueStyle}>{formData.refName || '-'}</span>
               </div>
+              <div style={colItemStyle}>
+                <span style={labelStyle}>Refer Code :</span>
+                <span style={valueStyle}>{formData.referCodeName || '-'}</span>
+              </div>
+            </div>
+
+            {/* Row 7: Date of Application */}
+            <div style={rowStyle}>
               <div style={colItemStyle}>
                 <span style={labelStyle}>Date of Application :</span>
                 <span style={valueStyle}>{formData.applicationDate ? new Date(formData.applicationDate).toLocaleDateString('en-GB') : '-'}</span>
@@ -332,7 +347,7 @@ const AccountOpeningForm = () => {
                 style={{
                   marginTop: "20px",
                   color: "#000000",
-                  fontSize: "13px",
+                  fontSize: "18px",
                   fontWeight: "900",
                   letterSpacing: "2px",
                   textTransform: "uppercase"
@@ -442,6 +457,13 @@ const AccountOpeningForm = () => {
                     <span className="text-slate-500 text-xs tracking-wider">Reference Name :</span>
                     <span className="text-black">{formData.refName || '-'}</span>
                   </div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-slate-500 text-xs tracking-wider">Refer Code :</span>
+                    <span className="text-black">{formData.referCodeName || '-'}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-b border-dashed border-slate-200 pb-2">
                   <div className="flex items-baseline gap-2">
                     <span className="text-slate-500 text-xs tracking-wider">Date of Application :</span>
                     <span className="text-black">{formData.applicationDate ? new Date(formData.applicationDate).toLocaleDateString('en-GB') : '-'}</span>
