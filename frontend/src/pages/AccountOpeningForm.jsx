@@ -177,8 +177,8 @@ const AccountOpeningForm = () => {
               <input type="text" name="refName" value={formData.refName} onChange={handleChange} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 focus:border-blue-500 outline-none" placeholder="Who referred this customer?" />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Refer Code Name</label>
-              <input type="text" name="referCodeName" value={formData.referCodeName} onChange={handleChange} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 focus:border-blue-500 outline-none" placeholder="Enter refer code name" />
+              <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Reference Code</label>
+              <input type="text" name="referCodeName" value={formData.referCodeName} onChange={handleChange} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 focus:border-blue-500 outline-none" placeholder="Enter Reference Code" />
             </div>
 
             {/* Date of Application & Upload Photo - Side-by-side */}
@@ -290,7 +290,7 @@ const AccountOpeningForm = () => {
                 <span style={valueStyle}>{formData.refName || '-'}</span>
               </div>
               <div style={colItemStyle}>
-                <span style={labelStyle}>Refer Code :</span>
+                <span style={labelStyle}>Reference Code :</span>
                 <span style={valueStyle}>{formData.referCodeName || '-'}</span>
               </div>
             </div>
@@ -458,7 +458,7 @@ const AccountOpeningForm = () => {
                     <span className="text-black">{formData.refName || '-'}</span>
                   </div>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-slate-500 text-xs tracking-wider">Refer Code :</span>
+                    <span className="text-slate-500 text-xs tracking-wider">Reference Code :</span>
                     <span className="text-black">{formData.referCodeName || '-'}</span>
                   </div>
                 </div>
